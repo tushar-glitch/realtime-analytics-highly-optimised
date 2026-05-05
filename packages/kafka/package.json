@@ -1,0 +1,26 @@
+{
+  "name": "@analytics/kafka",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "setup-topics": "node --loader ts-node/esm src/setup-topics.ts"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
+  }
+}

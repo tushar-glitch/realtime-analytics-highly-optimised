@@ -1,0 +1,22 @@
+# KEDA scales the processor based on Kafka consumer lag.
+# When lag > 10K events, it spins up more consumer pods.
+# When lag = 0, it scales back to minReplicaCount.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: processor
+  namespace: analytics
+spec:
+  scaleTargetRef:
+    name: processor
+  minReplicaCount: 1
+  maxReplicaCount: 6        # matches topic partition count
+  cooldownPeriod: 60
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: redpanda:9092
+        consumerGroup: processor-group
+        topic: events.raw
+        lagThreshold: "10000"
+        offsetResetPolicy: latest

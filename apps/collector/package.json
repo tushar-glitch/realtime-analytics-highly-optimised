@@ -1,0 +1,33 @@
+{
+  "name": "@analytics/collector",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@analytics/config": "workspace:*",
+    "@analytics/kafka": "workspace:*",
+    "@analytics/logger": "workspace:*",
+    "@analytics/types": "workspace:*",
+    "@fastify/rate-limit": "^9.1.0",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.4.0",
+    "kafkajs": "^2.2.4",
+    "prom-client": "^15.1.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "*",
+    "vitest": "^2.0.0"
+  }
+}
