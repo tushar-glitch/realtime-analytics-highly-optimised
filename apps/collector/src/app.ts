@@ -1,18 +1,20 @@
 import Fastify from 'fastify'
 import rateLimit from '@fastify/rate-limit'
-import { createLogger } from '@analytics/logger'
 import kafkaPlugin from './plugins/kafka.js'
 import metricsPlugin from './plugins/metrics.js'
 import { collectRoutes } from './routes/collect.js'
 import { healthRoutes } from './routes/health.js'
 
-const log = createLogger('collector')
-
 export async function buildApp() {
   const app = Fastify({
-    logger: log,
-    trustProxy: true,           // read real IP from X-Forwarded-For
-    bodyLimit: 64 * 1024,       // 64KB max body — events are tiny
+    logger: {
+      level: process.env['LOG_LEVEL'] ?? 'info',
+      ...(process.env['NODE_ENV'] === 'development' && {
+        transport: { target: 'pino-pretty', options: { colorize: true, translateTime: 'HH:MM:ss' } },
+      }),
+    },
+    trustProxy: true,
+    bodyLimit: 64 * 1024,
   })
 
   // CORS — allow all origins (tracking script runs on any site)

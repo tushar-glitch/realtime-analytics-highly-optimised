@@ -17,7 +17,7 @@
     "@analytics/kafka": "workspace:*",
     "@analytics/logger": "workspace:*",
     "@analytics/types": "workspace:*",
-    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/rate-limit": "^10.0.0",
     "fastify": "^5.0.0",
     "fastify-plugin": "^4.5.0",
     "kafkajs": "^2.2.4",

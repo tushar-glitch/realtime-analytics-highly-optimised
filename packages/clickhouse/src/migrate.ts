@@ -45,8 +45,17 @@ async function migrate() {
 
     const sql = await readFile(join(MIGRATIONS_DIR, file), 'utf8')
 
-    // Split on semicolons to execute each statement individually
-    const statements = sql.split(';').map((s) => s.trim()).filter(Boolean)
+    // Strip comment lines first (before splitting) so semicolons inside
+    // comments don't create phantom statements
+    const stripped = sql
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('--'))
+      .join('\n')
+
+    const statements = stripped
+      .split(';')
+      .map((s) => s.trim())
+      .filter(Boolean)
 
     for (const statement of statements) {
       await client.exec({ query: statement })

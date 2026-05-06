@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "setup-topics": "node --loader ts-node/esm src/setup-topics.ts"
+    "setup-topics": "tsx src/setup-topics.ts"
   },
   "dependencies": {
     "kafkajs": "^2.2.4"
@@ -21,6 +21,6 @@
   "devDependencies": {
     "typescript": "*",
     "@types/node": "^20.0.0",
-    "ts-node": "^10.9.0"
+    "tsx": "^4.16.0"
   }
 }

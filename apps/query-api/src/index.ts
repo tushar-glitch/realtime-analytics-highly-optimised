@@ -2,7 +2,6 @@ import Fastify from 'fastify'
 import type { ClickHouseClient } from '@clickhouse/client'
 import { queryApiConfig } from '@analytics/config'
 import { createClickHouseClient } from '@analytics/clickhouse'
-import { createLogger } from '@analytics/logger'
 import { collectDefaultMetrics, register } from 'prom-client'
 import { Cache } from './services/cache.js'
 import { statsRoutes } from './routes/stats.js'
@@ -17,7 +16,6 @@ declare module 'fastify' {
 }
 
 const cfg = queryApiConfig()
-const log = createLogger('query-api')
 
 collectDefaultMetrics()
 
@@ -31,7 +29,15 @@ const ch = createClickHouseClient({
 const cache = new Cache(cfg.REDIS_URL)
 await cache.connect()
 
-const app = Fastify({ logger: log, trustProxy: true })
+const app = Fastify({
+  logger: {
+    level: process.env['LOG_LEVEL'] ?? 'info',
+    ...(process.env['NODE_ENV'] === 'development' && {
+      transport: { target: 'pino-pretty', options: { colorize: true, translateTime: 'HH:MM:ss' } },
+    }),
+  },
+  trustProxy: true,
+})
 
 app.decorate('ch', ch)
 app.decorate('cache', cache)
