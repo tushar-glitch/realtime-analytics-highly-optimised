@@ -28,16 +28,16 @@ function parseRefSource(referrer: string, utmSource: string): string {
   }
 }
 
-function makeSessionId(visitorId: string, siteId: string): bigint {
+function makeSessionId(visitorId: string, siteId: string): string {
   const hash = createHash('sha256')
-    .update(`${visitorId}::${siteId}::${new Date().toISOString().slice(0, 13)}`) // hourly sessions
+    .update(`${visitorId}::${siteId}::${new Date().toISOString().slice(0, 13)}`)
     .digest('hex')
     .slice(0, 16)
-  return BigInt(`0x${hash}`)
+  return BigInt(`0x${hash}`).toString()
 }
 
-function hexToBigInt(hex: string): bigint {
-  return BigInt(`0x${hex.padEnd(16, '0')}`)
+function hexToUInt64String(hex: string): string {
+  return BigInt(`0x${hex.padEnd(16, '0')}`).toString()
 }
 
 export function enrich(raw: KafkaEvent): EnrichedEvent {
@@ -54,12 +54,12 @@ export function enrich(raw: KafkaEvent): EnrichedEvent {
   } catch { /* malformed URL — leave empty */ }
 
   const ref_source = parseRefSource(raw.referrer ?? '', utm.utm_source)
-  const visitor_id = hexToBigInt(raw.visitor_id)
+  const visitor_id = hexToUInt64String(raw.visitor_id)
   const session_id = makeSessionId(raw.visitor_id, raw.site_id)
 
   return {
     site_id: raw.site_id,
-    timestamp: new Date(raw.received_at),
+    timestamp: new Date(raw.received_at).toISOString().replace('T', ' ').replace('Z', ''),
     type: raw.type,
     pathname,
     hostname,

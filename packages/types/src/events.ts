@@ -24,7 +24,7 @@ export interface KafkaEvent extends RawEvent {
 /** Final shape written to ClickHouse after processor enrichment */
 export interface EnrichedEvent {
   site_id: string
-  timestamp: Date
+  timestamp: string  // "YYYY-MM-DD HH:MM:SS.mmm" — ClickHouse DateTime64 format
   type: EventType
   // Page
   pathname: string
@@ -43,9 +43,9 @@ export interface EnrichedEvent {
   // Geo — from MaxMind GeoLite2
   country: string
   region: string
-  // Session
-  session_id: bigint
-  visitor_id: bigint
+  // Session (decimal strings — BigInt can't be JSON-serialized for ClickHouse UInt64)
+  session_id: string
+  visitor_id: string
   is_bounce: 0 | 1
   duration: number
   // Custom events
