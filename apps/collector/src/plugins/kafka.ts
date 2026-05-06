@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
-import { type Producer, CompressionTypes } from 'kafkajs'
+import type { Producer } from 'kafkajs'
 import { createKafkaClient } from '@analytics/kafka'
 
 declare module 'fastify' {
@@ -16,7 +16,6 @@ export default fp(async (app: FastifyInstance) => {
   const producer = kafka.producer({
     allowAutoTopicCreation: false,
     idempotent: true,
-    compression: CompressionTypes.LZ4,
   })
 
   await producer.connect()

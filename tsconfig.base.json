@@ -12,9 +12,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "forceConsistentCasingInFileNames": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", "dist"]
 }

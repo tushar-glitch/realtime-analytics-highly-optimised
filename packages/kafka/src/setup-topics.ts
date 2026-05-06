@@ -11,7 +11,12 @@ async function setupTopics() {
   const existing = new Set(await admin.listTopics())
   const toCreate = Object.entries(TOPIC_CONFIG)
     .filter(([name]) => !existing.has(name))
-    .map(([topic, config]) => ({ topic, ...config }))
+    .map(([topic, config]) => ({
+      topic,
+      ...config,
+      // spread readonly tuple → mutable array (kafkajs ITopicConfig requires mutable)
+      configEntries: [...config.configEntries],
+    }))
 
   if (toCreate.length === 0) {
     console.warn('All topics already exist')

@@ -1,6 +1,6 @@
-import { Reader } from '@maxmind/geoip2-node'
+import { Reader, ReaderModel } from '@maxmind/geoip2-node'
 
-let reader: Reader | null = null
+let reader: ReaderModel | null = null
 
 export async function initGeoIP(dbPath: string) {
   reader = await Reader.open(dbPath)

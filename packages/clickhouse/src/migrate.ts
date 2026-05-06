@@ -26,12 +26,12 @@ async function migrate() {
     `,
   })
 
-  const applied = new Set(
-    (
-      await client.query({ query: 'SELECT version FROM schema_migrations', format: 'JSONEachRow' })
-        .then((r) => r.json<{ version: string }[]>())
-    ).map((r) => r.version),
-  )
+  const migrationsResult = await client.query({
+    query: 'SELECT version FROM schema_migrations',
+    format: 'JSONEachRow',
+  })
+  const migrationsRows = await migrationsResult.json<{ version: string }>()
+  const applied = new Set(migrationsRows.map((r) => r.version))
 
   const files = (await readdir(MIGRATIONS_DIR))
     .filter((f) => f.endsWith('.sql'))

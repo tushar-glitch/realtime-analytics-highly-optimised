@@ -41,7 +41,7 @@ export async function getStatsSummary(
       query_params: { site_id: siteId },
       format: 'JSONEachRow',
     })
-    .then((r) => r.json<StatsSummary[]>())
+    .then((r) => r.json<StatsSummary>())
 
   return result[0] ?? { visitors: 0, pageviews: 0, sessions: 0, bounce_rate: 0, avg_duration: 0, change: { visitors: 0, pageviews: 0 } }
 }
@@ -71,7 +71,7 @@ export async function getTopPages(
       query_params: { site_id: siteId, limit },
       format: 'JSONEachRow',
     })
-    .then((r) => r.json<TopPage[]>())
+    .then((r) => r.json<TopPage>())
 }
 
 export async function getTimeseries(
@@ -98,5 +98,5 @@ export async function getTimeseries(
       query_params: { site_id: siteId },
       format: 'JSONEachRow',
     })
-    .then((r) => r.json<TimeseriesPoint[]>())
+    .then((r) => r.json<TimeseriesPoint>())
 }

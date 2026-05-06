@@ -2,6 +2,7 @@
   "name": "@analytics/clickhouse",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "migrate": "node --loader ts-node/esm src/migrate.ts"
+    "migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
     "@clickhouse/client": "^1.4.0"
@@ -21,7 +22,7 @@
   "devDependencies": {
     "typescript": "*",
     "@types/node": "^20.0.0",
-    "ts-node": "^10.9.0",
+    "tsx": "^4.16.0",
     "@analytics/config": "workspace:*"
   }
 }

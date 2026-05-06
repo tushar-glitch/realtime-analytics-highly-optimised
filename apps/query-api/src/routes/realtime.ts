@@ -33,7 +33,7 @@ export async function realtimeRoutes(app: FastifyInstance) {
           query_params: { site_id },
           format: 'JSONEachRow',
         })
-        .then((r) => r.json<{ active_visitors: number }[]>())
+        .then((r) => r.json<{ active_visitors: number }>())
 
       const payload = JSON.stringify({ active_visitors: result[0]?.active_visitors ?? 0 })
       reply.raw.write(`data: ${payload}\n\n`)
