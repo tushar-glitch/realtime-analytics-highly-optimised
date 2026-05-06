@@ -22,28 +22,59 @@ export async function getStatsSummary(
   period: Period,
 ): Promise<StatsSummary> {
   const interval = periodToInterval(period)
+  const params = { site_id: siteId }
 
-  const result = await client
-    .query({
-      query: `
-        SELECT
-          uniqMerge(visitors)                           AS visitors,
-          sum(pageviews)                                AS pageviews,
-          sum(sessions)                                 AS sessions,
-          if(sum(sessions) > 0,
-            countMerge(bounces) / sum(sessions), 0)    AS bounce_rate,
-          if(sum(sessions) > 0,
-            sum(total_duration) / sum(sessions), 0)    AS avg_duration
-        FROM mv_sessions_daily_data
-        WHERE site_id = {site_id: UUID}
-          AND date >= toDate(now() - INTERVAL ${interval})
-      `,
-      query_params: { site_id: siteId },
-      format: 'JSONEachRow',
-    })
-    .then((r) => r.json<StatsSummary>())
+  // Two queries: sessions MV has bounce/duration, pageviews MV has pageview count
+  const [sessionRows, pageviewRows] = await Promise.all([
+    client
+      .query({
+        query: `
+          SELECT
+            visitors,
+            s AS sessions,
+            ifNull(b / nullIf(s, 0), 0) AS bounce_rate,
+            ifNull(d / nullIf(s, 0), 0) AS avg_duration
+          FROM (
+            SELECT
+              uniqMerge(visitors) AS visitors,
+              sum(sessions)       AS s,
+              sum(bounces)        AS b,
+              sum(total_duration) AS d
+            FROM mv_sessions_daily_data
+            WHERE site_id = {site_id: UUID}
+              AND date >= toDate(now() - INTERVAL ${interval})
+          )
+        `,
+        query_params: params,
+        format: 'JSONEachRow',
+      })
+      .then((r) => r.json<{ visitors: number; sessions: number; bounce_rate: number; avg_duration: number }>()),
 
-  return result[0] ?? { visitors: 0, pageviews: 0, sessions: 0, bounce_rate: 0, avg_duration: 0, change: { visitors: 0, pageviews: 0 } }
+    client
+      .query({
+        query: `
+          SELECT sum(pageviews) AS pageviews
+          FROM mv_pageviews_hourly_data
+          WHERE site_id = {site_id: UUID}
+            AND hour >= now() - INTERVAL ${interval}
+        `,
+        query_params: params,
+        format: 'JSONEachRow',
+      })
+      .then((r) => r.json<{ pageviews: number }>()),
+  ])
+
+  const s = sessionRows[0] ?? { visitors: 0, sessions: 0, bounce_rate: 0, avg_duration: 0 }
+  const p = pageviewRows[0] ?? { pageviews: 0 }
+
+  return {
+    visitors: Number(s.visitors),
+    pageviews: Number(p.pageviews),
+    sessions: Number(s.sessions),
+    bounce_rate: Number(s.bounce_rate),
+    avg_duration: Number(s.avg_duration),
+    change: { visitors: 0, pageviews: 0 },
+  }
 }
 
 export async function getTopPages(
@@ -72,6 +103,7 @@ export async function getTopPages(
       format: 'JSONEachRow',
     })
     .then((r) => r.json<TopPage>())
+    .then((rows) => rows.map((row) => ({ ...row, pageviews: Number(row.pageviews), visitors: Number(row.visitors) })))
 }
 
 export async function getTimeseries(
@@ -99,4 +131,5 @@ export async function getTimeseries(
       format: 'JSONEachRow',
     })
     .then((r) => r.json<TimeseriesPoint>())
+    .then((rows) => rows.map((row) => ({ ...row, pageviews: Number(row.pageviews), visitors: Number(row.visitors) })))
 }
