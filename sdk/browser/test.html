@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SDK Integration Test</title>
+  <script
+    defer
+    data-site-id="550e8400-e29b-41d4-a716-446655440000"
+    src="http://localhost:3000/tracker.min.js"
+  ></script>
+</head>
+<body style="font-family:sans-serif;max-width:500px;margin:40px auto;padding:0 20px">
+  <h2>Analytics SDK Test Page</h2>
+  <p>Opening this page fires a pageview automatically.</p>
+
+  <button onclick="simulateSPA()">Simulate SPA navigation → /dashboard</button>
+  <br><br>
+  <button onclick="trackSignup()">Track custom event: signup</button>
+  <br><br>
+  <div id="log" style="font-size:12px;color:#666;margin-top:16px;white-space:pre"></div>
+
+  <script>
+    const log = document.getElementById('log')
+    function append(msg) { log.textContent += msg + '\n' }
+
+    // Monkey-patch fetch/sendBeacon to log what the SDK sends
+    const origBeacon = navigator.sendBeacon.bind(navigator)
+    navigator.sendBeacon = (url, body) => {
+      body.text().then(t => append('→ sendBeacon: ' + t))
+      return origBeacon(url, body)
+    }
+
+    function simulateSPA() {
+      history.pushState({}, '', '/dashboard')
+      append('→ pushed /dashboard')
+    }
+    function trackSignup() {
+      window.analytics.track('signup', { plan: 'pro' })
+      append('→ custom event: signup')
+    }
+  </script>
+</body>
+</html>

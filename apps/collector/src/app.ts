@@ -1,9 +1,15 @@
+import { readFileSync } from 'node:fs'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import Fastify from 'fastify'
 import rateLimit from '@fastify/rate-limit'
 import kafkaPlugin from './plugins/kafka.js'
 import metricsPlugin from './plugins/metrics.js'
 import { collectRoutes } from './routes/collect.js'
 import { healthRoutes } from './routes/health.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const TRACKER_JS = readFileSync(resolve(__dirname, '../../../sdk/browser/dist/tracker.min.js'))
 
 export async function buildApp() {
   const app = Fastify({
@@ -39,6 +45,14 @@ export async function buildApp() {
 
   await app.register(collectRoutes)
   await app.register(healthRoutes)
+
+  // Serve the tracker script — cached 1h in browsers, no cache on CDN revalidation
+  app.get('/tracker.min.js', async (_req, reply) => {
+    reply
+      .header('content-type', 'application/javascript; charset=utf-8')
+      .header('cache-control', 'public, max-age=3600')
+      .send(TRACKER_JS)
+  })
 
   return app
 }
