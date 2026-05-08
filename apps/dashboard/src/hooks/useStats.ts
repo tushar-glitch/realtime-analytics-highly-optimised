@@ -1,6 +1,6 @@
 'use client'
 import useSWR from 'swr'
-import type { StatsSummary, TopPage, TimeseriesPoint } from '@analytics/types'
+import type { StatsSummary, TopPage, TimeseriesPoint, TopReferrer } from '@analytics/types'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -25,6 +25,14 @@ export function useTopPages(siteId: string, period: string) {
 export function useTimeseries(siteId: string, period: string) {
   return useSWR<TimeseriesPoint[]>(
     `${BASE}/timeseries?site_id=${siteId}&period=${period}`,
+    fetcher,
+    { refreshInterval: 30_000 },
+  )
+}
+
+export function useTopReferrers(siteId: string, period: string) {
+  return useSWR<TopReferrer[]>(
+    `${BASE}/referrers?site_id=${siteId}&period=${period}`,
     fetcher,
     { refreshInterval: 30_000 },
   )

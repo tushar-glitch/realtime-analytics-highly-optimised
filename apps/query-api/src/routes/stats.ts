@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import type { Period } from '@analytics/types'
 import { getStatsSummary, getTopPages, getTimeseries } from '../queries/pageviews.js'
+import { getTopReferrers } from '../queries/referrers.js'
 
 const querySchema = z.object({
   site_id: z.string().uuid(),
@@ -46,6 +47,20 @@ export async function statsRoutes(app: FastifyInstance) {
 
     const data = await app.cache.cached(cacheKey, app.cfg.CACHE_TTL_SECONDS, () =>
       getTimeseries(app.ch, site_id, period as Period),
+    )
+
+    return reply.send(data)
+  })
+
+  app.get('/api/referrers', async (req, reply) => {
+    const q = querySchema.safeParse(req.query)
+    if (!q.success) return reply.code(400).send({ error: 'Invalid query' })
+
+    const { site_id, period } = q.data
+    const cacheKey = `referrers:${site_id}:${period}`
+
+    const data = await app.cache.cached(cacheKey, app.cfg.CACHE_TTL_SECONDS, () =>
+      getTopReferrers(app.ch, site_id, period as Period),
     )
 
     return reply.send(data)
