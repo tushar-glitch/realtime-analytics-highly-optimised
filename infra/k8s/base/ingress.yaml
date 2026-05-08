@@ -1,0 +1,49 @@
+# Traefik IngressRoute (ships with K3s by default).
+# Replace hosts with your actual domain — e.g. yourdomain.com
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: analytics
+  namespace: analytics
+  annotations:
+    # K3s Traefik handles TLS termination via Let's Encrypt
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - collect.yourdomain.com
+        - analytics.yourdomain.com
+      secretName: analytics-tls
+  rules:
+    # Collector — receives SDK events from any website
+    - host: collect.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: collector
+                port:
+                  number: 3000
+
+    # Dashboard — the analytics UI
+    - host: analytics.yourdomain.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: query-api
+                port:
+                  number: 3002
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 3003

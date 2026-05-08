@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor
+  namespace: analytics
+spec:
+  replicas: 1   # KEDA ScaledObject overrides this
+  selector:
+    matchLabels:
+      app: processor
+  template:
+    metadata:
+      labels:
+        app: processor
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9091"
+    spec:
+      containers:
+        - name: processor
+          image: ghcr.io/your-org/analytics-processor:latest
+          envFrom:
+            - secretRef:
+                name: analytics-secrets
+          env:
+            - name: NODE_ENV
+              value: production
+          volumeMounts:
+            - name: geoip
+              mountPath: /data
+              readOnly: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+      volumes:
+        - name: geoip
+          configMap:
+            name: geoip-db
+            optional: true   # skips gracefully if not loaded yet

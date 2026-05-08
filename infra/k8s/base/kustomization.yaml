@@ -5,6 +5,18 @@ namespace: analytics
 
 resources:
   - namespace.yaml
+  - secrets.yaml
+  # Stateful backing services
+  - clickhouse/statefulset.yaml
+  - redpanda/statefulset.yaml
+  - redis/deployment.yaml
+  # Applications
   - collector/deployment.yaml
+  - collector/service.yaml
   - collector/hpa.yaml
+  - processor/deployment.yaml
   - processor/keda-scaledobject.yaml
+  - query-api/deployment.yaml
+  - dashboard/deployment.yaml
+  # Ingress
+  - ingress.yaml

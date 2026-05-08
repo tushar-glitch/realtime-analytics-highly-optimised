@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: ghcr.io/your-org/analytics-dashboard:latest
+          ports:
+            - containerPort: 3003
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: QUERY_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: analytics-secrets
+                  key: QUERY_API_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3003
+            initialDelaySeconds: 10
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: analytics
+spec:
+  selector:
+    app: dashboard
+  ports:
+    - name: http
+      port: 3003
+      targetPort: 3003
