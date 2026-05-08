@@ -18,5 +18,8 @@ resources:
   - processor/keda-scaledobject.yaml
   - query-api/deployment.yaml
   - dashboard/deployment.yaml
+  # One-time init jobs (idempotent — safe to re-apply)
+  - jobs/init-topics.yaml
+  - jobs/migrate-clickhouse.yaml
   # Ingress
   - ingress.yaml

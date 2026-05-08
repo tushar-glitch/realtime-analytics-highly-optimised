@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redpanda-init-topics
+  namespace: analytics
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init-topics
+          image: redpandadata/redpanda:v24.2.18
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "Waiting for Redpanda..."
+              until rpk cluster info --brokers redpanda:9092 > /dev/null 2>&1; do
+                sleep 3
+              done
+
+              echo "Creating topics..."
+              rpk topic create events.raw \
+                --brokers redpanda:9092 \
+                --partitions 6 \
+                --replicas 1 \
+                --if-not-exists
+
+              rpk topic create events.dlq \
+                --brokers redpanda:9092 \
+                --partitions 1 \
+                --replicas 1 \
+                --if-not-exists
+
+              echo "Topics ready."
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

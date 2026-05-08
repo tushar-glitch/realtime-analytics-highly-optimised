@@ -4,8 +4,10 @@ import { StatCard } from '@/components/StatCard'
 import { Chart } from '@/components/Chart'
 import { TopPages } from '@/components/TopPages'
 import { Sources } from '@/components/Sources'
+import { Countries } from '@/components/Countries'
+import { Devices } from '@/components/Devices'
 import { LiveBadge } from '@/components/LiveBadge'
-import { useStatsSummary, useTopPages, useTimeseries, useTopReferrers } from '@/hooks/useStats'
+import { useStatsSummary, useTopPages, useTimeseries, useTopReferrers, useTopCountries, useDevices, useTopBrowsers } from '@/hooks/useStats'
 
 type Period = '1h' | '24h' | '7d' | '30d'
 type Metric = 'visitors' | 'pageviews'
@@ -48,6 +50,9 @@ export default function DashboardPage({ params }: { params: Promise<{ siteId: st
   const { data: pages } = useTopPages(siteId, period)
   const { data: timeseries } = useTimeseries(siteId, period)
   const { data: referrers } = useTopReferrers(siteId, period)
+  const { data: countries } = useTopCountries(siteId, period)
+  const { data: devices } = useDevices(siteId, period)
+  const { data: browsers } = useTopBrowsers(siteId, period)
 
   return (
     <div className="min-h-screen bg-[#f8f9fb]">
@@ -112,13 +117,21 @@ export default function DashboardPage({ params }: { params: Promise<{ siteId: st
           </div>
         </div>
 
-        {/* Bottom row */}
+        {/* Bottom grid — 2×2 */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             {pages ? <TopPages data={pages} /> : <Skeleton className="h-48 w-full" />}
           </div>
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             {referrers ? <Sources data={referrers} /> : <Skeleton className="h-48 w-full" />}
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            {countries ? <Countries data={countries} /> : <Skeleton className="h-48 w-full" />}
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            {devices && browsers
+              ? <Devices devices={devices} browsers={browsers} />
+              : <Skeleton className="h-48 w-full" />}
           </div>
         </div>
       </main>
